@@ -8,6 +8,8 @@ import strutils
 import colors
 import terminal 
 import argparse
+import nimx/window
+import nimx/text_field
 
 let cmake_project_path = "unittests/sample_project"
 let temp_build_path = ".cmake_nimui_buildtest"
@@ -108,23 +110,33 @@ proc show(context: CM_CacheContext) =
         logger_debug("      value : " & value)
     logger_debug("=================================================\n")
 
-proc cmake_parse(project_path: string): void =
+proc cmake_parse(project_path: string): CM_CacheContext =
     
     #let cmake_contents = os.joinPath(project_path, "CMakeLists.txt").readfile();
     os.createDir(temp_build_path)
     let abs_project_path = project_path.absolutePath().normalizedPath()
-    let cmake_lh = osproc.execProcess("cmake -LAH " & abs_project_path, working_dir=temp_build_path)
+    let cmake_lh = osproc.execProcess("cmake -LH " & abs_project_path, working_dir=temp_build_path)
 
     var context = create_CacheContext(cmake_lh, "main_context")
-    context.show()
-    
-# ------ main ------
-when isMainModule:
+    result = context
+
+runApplication:
+    # ------ main ------
+    #when isMainModule:
     echo(commandLineParams())
     let prog_opts = p.parse(commandLineParams())
-    logger_set_verbosity(parseEnum[logger_states](prog_opts.verbosity))
+    try:
+        logger_set_verbosity(parseEnum[logger_states](prog_opts.verbosity))
+    except:
+        logger_set_verbosity(info)
+
     
-    
-    # 1. Parse the cmakeLists and extract into a data structure
-    cmake_parse(cmake_project_path)
+    # 1. Parse the cmakeLists and LH and extract into a data structure
+    var cache_context = cmake_parse(cmake_project_path)
+    cache_context.show()
+    var win = newWindow(newRect(40, 40, 800, 600))
+    let label = newLabel(newrect(20, 20, 150, 20))
+    label.text = "Hello World!"
+    win.addSubview(label)
+
     

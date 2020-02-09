@@ -13,3 +13,4 @@ bin           = @["cmake_nimui"]
 
 requires "nim >= 0.20.2"
 requires "argparse >= 0.10.1"
+requires "nimx"
